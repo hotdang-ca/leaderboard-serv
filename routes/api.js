@@ -1,36 +1,15 @@
 var debug = require('debug')('rbyc-serv:server');
 var express = require('express');
 var router = express.Router();
-var jwt = require('jwt-express');
 var bcrypt = require('bcryptjs');
 
-var PUBLIC_URL = 'http://rbyc.hotdang.ca';
+// var PUBLIC_URL = 'http://rbyc.hotdang.ca';
 
 var dbController = require('../models');
 const ROLES = {
   User: 'user',
   Admin: 'admin',
 };
-
-// TODO: this should be middleware
-const checkToken = (jwtToken) => {
-  // console.log('stale', jwtToken.stale);
-  // console.log('valid', jwtToken.valid);
-  if (
-    jwtToken
-    && jwtToken.stale
-    || !jwtToken.valid
-  ) {
-    return false;
-  }
-
-  return true;
-};
-
-const tokenGenerator = (userObject) => jwt.create('regina-beach-yacht-club', {
-  sub: userObject.username || userObject.email,
-  role: userObject.role || ROLES.Staff,
-});
 
 /**
  * User Things (auth/signup/etc)
@@ -48,21 +27,6 @@ router.post('/users/signin', (req, res, next) => {
 
     return res.status(200).json({ user: matches[0] });
   });
-
-  //   const jwt = tokenGenerator(user);
-  //   console.log('Issued jwt: ', jwt);
-  //   return res.status(200).json({
-  //     success: true,
-  //     token: jwt.token,
-  //     payload: jwt.payload,
-  //     user: {
-  //       ...user,
-  //       password: undefined,
-  //       id: user._id,
-  //       _id: undefined,
-  //     },
-  //   });
-  // });
 });
 
 router.post('/users/signup', (req, res, next) => {
@@ -71,6 +35,8 @@ router.post('/users/signup', (req, res, next) => {
     password,
     firstName,
     lastName,
+    teamName,
+    gymName,
     role,
   } = req.body;
   
@@ -82,7 +48,9 @@ router.post('/users/signup', (req, res, next) => {
     lastName,
     email,
     password: encryptedPassword,
-    role: role || 'user'
+    role: role || 'user',
+    teamName,
+    gymName,
   }, (created) => {
     return res.status(201).json({
       success: 'true',
@@ -90,6 +58,40 @@ router.post('/users/signup', (req, res, next) => {
     });
   });
 });
+
+/**
+ * List users
+ */
+router.get('/users', (req, res, next) => {
+  dbController.Users.list({}, null, (matches) => {
+    return res.status(200).json({
+      users: matches.map((m) => ({...m, password: undefined })),
+    });
+  });
+});
+
+/**
+ * List users of team
+ */
+router.get('/users/team/:teamName', (req, res, next) => {
+  dbController.Users.list({ teamName: req.params.teamName }, null, (matches) => {
+    return res.status(200).json({
+      users: matches.map((m) => ({...m, password: undefined })) || [],
+    });
+  });
+});
+
+/**
+ * List users of gym
+ */
+router.get('/users/gym/:gymName', (req, res, next) => {
+  dbController.Users.list({ gymName: req.params.gymName }, null, (matches) => {
+    return res.status(200).json({
+      users: matches.map((m) => ({...m, password: undefined })) || [],
+    });
+  });
+});
+
 
 /**
  * List Customers
