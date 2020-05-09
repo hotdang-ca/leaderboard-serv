@@ -1,0 +1,31 @@
+{
+  "name": "leaderboard-serv",
+  "version": "1.0.0",
+  "description": "Leaderboard backend",
+  "main": "index.js",
+  "scripts": {
+    "client": "cd leaderboard-web && npm run start",
+    "server": "nodemon ./bin/www",
+    "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\"",
+    "start": "NODE_ENV=production node ./bin/www",
+    "client-build": "cd leaderboard-web && npm install && npm install --only=dev --no-shrinkwrap && npm run build",
+    "dev-server": "DEBUG=leaderboard-serv:* nodemon start",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "James Robert Perih <hello@fourandahalfgiraffes.ca",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "concurrently": "^5.2.0",
+    "debug": "^4.1.1",
+    "express": "^4.17.1",
+    "jade": "^1.11.0",
+    "mongoose": "^5.9.13",
+    "morgan": "^1.10.0",
+    "nodemailer": "^6.4.6"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.3"
+  }
+}
