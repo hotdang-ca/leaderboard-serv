@@ -433,8 +433,60 @@ router.get('/users/gym/:gymName', (req, res, next) => {
  */
 router.get('/leaderboards/all', (req, res, next) => {
   const payload = _leaderboardData;
-  res.status(200).json(payload);
+  return res.status(200).json(payload);
 });
 
+router.get('/divisions', (req, res, next) => {
+  dbController.Divisions.list({}, null, ((divisions) => {
+    return res.status(200).json(divisions);
+  }));
+});
+
+router.get('/divisions/:divisionId', (req, res, next) => {
+  dbController.Divisions.get(req.params.divisionId, ((division) => {
+    return res.status(200).json(division);
+  }));
+});
+
+router.post('/divisions', (req, res, next) => {
+  const { name } = req.body;
+  dbController.Divisions.add({ name }, (created) => {
+    return res.status(201).json({
+      success: 'true',
+      division: created,
+    });
+  });
+});
+
+router.post('/events', (req, res, next) => {
+  const { name, division } = req.body;
+
+  const newEvent = dbController.Events.add({
+    name,
+    division,
+  }, (created) => {
+    console.log('created', created);
+
+    // assign the division, so that when we fetch divisions, they can be hydrated.
+    dbController.Divisions
+      .update(division, { events: [ created.id] }, (newErr, _) => {
+        if (!newErr) {
+          return res.status(201).json({
+            success: 'true',
+            event: created,
+          });
+        }
+        return res.status(500).json({ err: newErr });
+    });
+  });
+});
+
+router.get('/events', (req, res, next) => {
+  dbController.Events.list({}, null, (events) => {
+    return res.status(200).json({
+      events,
+    });
+  });
+});
 
 module.exports = router;
