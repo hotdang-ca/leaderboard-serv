@@ -1,14 +1,24 @@
 //TODO: everything!
 const mongoose = require('mongoose');
 
-const DB_USER = process.env.DB_USER;
-const DB_PASS = process.env.DB_PASSl
-const DB_SERVER = process.env.DB_SERVER;
-const DB_PORT = process.env.DB_PORT;
-const DB_ENDPOINT = process.env.DB_ENDPOINT;
+require('dotenv').config();
+// env verification
+console.log('Verifying env...');
+const { DB_USER,
+DB_PASS,
+DB_SERVER,
+DB_PORT,
+DB_ENDPOINT,
+} = process.env;
+if (!DB_USER || !DB_PASS || !DB_SERVER || !DB_PORT || !DB_ENDPOINT) {
+  console.error('Environment variables are not set up. Did you check your .env file?');
+  return 1;
+}
 
 const CONN = `mongodb://${DB_USER}:${DB_PASS}@${DB_SERVER}:${DB_PORT}/${DB_ENDPOINT}`;
 mongoose.Promise = global.Promise;
+
+console.log('CONN', CONN);
 
 const connect = (connectionString) => {
   if (typeof mongoose !== 'undefined') {

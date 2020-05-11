@@ -2,7 +2,6 @@ var express = require('express');
 var path = require('path');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
-require('dotenv').config();
 
 var index = require('./routes/index');
 var api = require('./routes/api');
@@ -16,19 +15,6 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
   next();
 });
-
-// env verification
-console.log('Verifying env...');
-const { DB_USER,
-DB_PASS,
-DB_SERVER,
-DB_PORT,
-DB_ENDPOINT,
-} = process.env;
-if (!DB_USER || !DB_PASS || !DB_SERVER || !DB_PORT || !DB_ENDPOINT) {
-  console.error('Environment variables are not set up. Did you check your .env file?');
-  return 1;
-}
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
