@@ -382,21 +382,29 @@ router.post('/users/register', (req, res, next) => {
     role,
   } = req.body;
   
-  var salt = bcrypt.genSaltSync(10);
-  const encryptedPassword = bcrypt.hashSync(password);
+  // do we have this user?
+  dbController.Users.list({ email }, null, (duplicates) => {
+    console.log('duplicates', duplicates);
+    if (duplicates.length) {
+      return res.status(400).json({ error: 'Duplicate user. Use a different email address.'});
+    }
 
-  dbController.Users.add({
-    firstName,
-    lastName,
-    email,
-    password: encryptedPassword,
-    role: role || 'user',
-    teamName,
-    gymName,
-  }, (created) => {
-    return res.status(201).json({
-      success: 'true',
-      user: created,
+    bcrypt.genSaltSync(10);
+    const encryptedPassword = bcrypt.hashSync(password);
+  
+    dbController.Users.add({
+      firstName,
+      lastName,
+      email,
+      password: encryptedPassword,
+      role: role || 'user',
+      teamName,
+      gymName,
+    }, (created) => {
+      return res.status(201).json({
+        success: 'true',
+        user: created,
+      });
     });
   });
 });
