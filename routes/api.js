@@ -352,13 +352,16 @@ const ROLES = {
  */
 router.post('/users/login', (req, res, next) => {
   const { email, password } = req.body;
+  
   dbController.Users.list({ email }, 1, (matches) => {
+    console.log('matches', matches);
+
     if (!matches || matches.length === 0) {
-      return res.status(401).json({ err: 'No such user.'});
+      return res.status(401).json({ error: 'No such user.'});
     }
 
     if (!bcrypt.compareSync(password, matches[0].password)) {
-      return res.status(401).json({ err: 'Invalid password.' });  
+      return res.status(401).json({ error: 'Invalid password.' });  
     }
 
     return res.status(200).json({ user: matches[0] });
