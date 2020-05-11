@@ -348,7 +348,7 @@ const ROLES = {
 };
 
 /**
- * User Things (auth/signup/etc)
+ * Sign in user
  */
 router.post('/users/login', (req, res, next) => {
   const { email, password } = req.body;
@@ -368,6 +368,9 @@ router.post('/users/login', (req, res, next) => {
   });
 });
 
+/**
+ * Register new user
+ */
 router.post('/users/register', (req, res, next) => {
   const {
     email,
@@ -395,6 +398,18 @@ router.post('/users/register', (req, res, next) => {
       success: 'true',
       user: created,
     });
+  });
+});
+
+/**
+ * Update user (eg profile)
+ */
+router.put('/users/:userId', (req, res, next) => {
+  const { userId } = req.params;
+  const { user } = req.body;
+
+  dbController.Users.update(userId, user, (updated) => {
+    return res.status(204).json({ status: 'ok' });
   });
 });
 

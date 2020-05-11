@@ -25,6 +25,7 @@ const userSchema = mongoose.Schema({
   role: String, // Enum: 'admin' | 'user'
   teamName: String,
   gymName: String,
+  gender: String,
   scores: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Score'} ]
 });
 const User = mongoose.model('User', userSchema);
@@ -103,12 +104,17 @@ module.exports = {
     },
     update: (id, user, cb) => {
       connect(CONN);
+
       const conditions = { _id: id };
       const update = {...user};
+
+      console.log('Updating', update);
+
       const options = {
         new: true,
       };
-      User.findOneAndUpdate(conditions, update, options, (err, doc) => {
+
+      User.findOneAndUpdate(conditions, update, {}, (err, doc) => {
         cb(doc);
       });
     },
