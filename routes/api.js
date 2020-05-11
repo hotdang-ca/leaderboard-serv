@@ -350,7 +350,7 @@ const ROLES = {
 /**
  * User Things (auth/signup/etc)
  */
-router.post('/users/signin', (req, res, next) => {
+router.post('/users/login', (req, res, next) => {
   const { email, password } = req.body;
   dbController.Users.list({ email }, 1, (matches) => {
     if (!matches || matches.length === 0) {
@@ -365,7 +365,7 @@ router.post('/users/signin', (req, res, next) => {
   });
 });
 
-router.post('/users/signup', (req, res, next) => {
+router.post('/users/register', (req, res, next) => {
   const {
     email,
     password,
@@ -406,13 +406,32 @@ router.get('/users', (req, res, next) => {
   });
 });
 
+router.get('/users/:userId', (req, res, next) => {
+  dbController.Users.get(req.params.userId, (match) => {
+    return res.status(200).json({
+      user: match,
+    });
+  });
+});
+
 /**
  * List users of team
  */
-router.get('/users/team/:teamName', (req, res, next) => {
+router.get('/users/teams/:teamName', (req, res, next) => {
   dbController.Users.list({ teamName: req.params.teamName }, null, (matches) => {
     return res.status(200).json({
       users: matches.map((m) => ({...m, password: undefined })) || [],
+    });
+  });
+});
+
+/**
+ * Get scores just for this user
+ */
+router.get('/users/:userId/scores', (req, res, next) => {
+  dbController.Scores.list({ user: req.params.userId }, null, (matches) => {
+    return res.status(200).json({
+      scores: matches,
     });
   });
 });
@@ -458,15 +477,21 @@ router.post('/divisions', (req, res, next) => {
   });
 });
 
+router.get('/events', (req, res, next) => {
+  dbController.Events.list({}, null, (events) => {
+    return res.status(200).json({
+      events,
+    });
+  });
+});
+
 router.post('/events', (req, res, next) => {
   const { name, division } = req.body;
 
-  const newEvent = dbController.Events.add({
+  dbController.Events.add({
     name,
     division,
   }, (created) => {
-    console.log('created', created);
-
     // assign the division, so that when we fetch divisions, they can be hydrated.
     dbController.Divisions
       .update(division, { events: [ created.id] }, (newErr, _) => {
@@ -481,10 +506,25 @@ router.post('/events', (req, res, next) => {
   });
 });
 
-router.get('/events', (req, res, next) => {
-  dbController.Events.list({}, null, (events) => {
+router.get('/scores', (req, res, next) => {
+  dbController.Scores.list({}, null, (scores) => {
     return res.status(200).json({
-      events,
+      scores,
+    });
+  });
+});
+
+router.post('/scores', (req, res, next) => {
+  const { user, event, score } = req.body;
+
+  dbController.Scores.add({
+    user,
+    event,
+    score,
+  }, (created) => {
+    return res.status(201).json({
+      success: 'true',
+      score: created,
     });
   });
 });

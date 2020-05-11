@@ -25,12 +25,14 @@ const userSchema = mongoose.Schema({
   role: String, // Enum: 'admin' | 'user'
   teamName: String,
   gymName: String,
+  scores: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Score'} ]
 });
 const User = mongoose.model('User', userSchema);
 
 const scoreSchema = mongoose.Schema({
   place: Number,
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  event: { type: mongoose.Schema.Types.ObjectId, ref: 'Event' },
   score: Number,
 });
 const Score = mongoose.model('Score', scoreSchema);
@@ -67,15 +69,19 @@ module.exports = {
     get: (userId, cb) => {
       connect(CONN);
 
-      User.find({ id: userId }, (err, matches) => {
-        cb(matches.map((u) => {
-          return {
-            ...u._doc,
+      User.findOne({ _id: userId }, (err, match) => {
+        if (err) {
+          throw("not found.");
+        }
+        const { _doc } = match;
+
+        cb({
+            ..._doc,
+            id: _doc._id,
             _id: undefined,
-            id: u._doc._id,
-            "__v": undefined,
+            password: undefined,
           }
-        }));
+        );
       });
     },
     list: (filter, limit, cb) => {
@@ -95,16 +101,6 @@ module.exports = {
         }
       });
     },
-    delete: (matching, cb) => {
-      connect(CONN);
-      User.findOneAndRemove(matching, {}, (err, result) => {
-        if (err) {
-          cb(err);
-        } else {
-          cb(result);
-        }
-      });
-    },
     update: (id, user, cb) => {
       connect(CONN);
       const conditions = { _id: id };
@@ -115,7 +111,17 @@ module.exports = {
       User.findOneAndUpdate(conditions, update, options, (err, doc) => {
         cb(doc);
       });
-    }
+    },
+    delete: (matching, cb) => {
+      connect(CONN);
+      User.findOneAndRemove(matching, {}, (err, result) => {
+        if (err) {
+          cb(err);
+        } else {
+          cb(result);
+        }
+      });
+    },
   },
 
   Divisions: {
@@ -136,7 +142,6 @@ module.exports = {
 
     get: (divisionId, cb) => {
       connect(CONN);
-
       Division
         .findOne({ _id: divisionId })
         .populate('events')
@@ -155,8 +160,6 @@ module.exports = {
       Division.find(filter)
         .populate('events')
         .exec((err, divisions) => {
-          console.log('divisions', divisions);
-
           if (!err) {
             cb(divisions.map((d) => {
               return {
@@ -212,7 +215,6 @@ module.exports = {
 
     get: (eventId, cb) => {
       connect(CONN);
-
       Event.find({ id: eventId }, (err, matches) => {
         cb(matches.map((u) => {
           return {
@@ -227,7 +229,6 @@ module.exports = {
 
     list: (filter, limit, cb) => {
       connect(CONN);
-      
       Event.find(filter, (err, events) => {
         if (!err) {
           cb(events.map((u) => {
@@ -243,16 +244,6 @@ module.exports = {
         }
       });
     },
-    delete: (matching, cb) => {
-      connect(CONN);
-      Event.findOneAndRemove(matching, {}, (err, result) => {
-        if (err) {
-          cb(err);
-        } else {
-          cb(result);
-        }
-      });
-    },
     update: (id, event, cb) => {
       connect(CONN);
       const conditions = { _id: id };
@@ -263,6 +254,89 @@ module.exports = {
       Event.findOneAndUpdate(conditions, update, options, (err, doc) => {
         cb(doc);
       });
+    },
+    delete: (matching, cb) => {
+      connect(CONN);
+      Event.findOneAndRemove(matching, {}, (err, result) => {
+        if (err) {
+          cb(err);
+        } else {
+          cb(result);
+        }
+      });
     }
+  },
+
+  Scores: {
+    add: (scoreObject, cb) => {
+      connect(CONN);
+      const newScore = new Score(scoreObject);
+      const response = newScore.save();
+      response.then((result) => {
+        cb(result && {
+          ...result._doc,
+          _id: undefined,
+          id: result._doc._id,
+        });
+      }).catch((err) => {
+        cb(err);
+      });
+    },
+
+    get: (scoreId, cb) => {
+      connect(CONN);
+
+      Score.find({ id: scoreId }, (err, matches) => {
+        cb(matches.map((u) => {
+          return {
+            ...u._doc,
+            _id: undefined,
+            id: u._doc._id,
+            "__v": undefined,
+          }
+        }));
+      });
+    },
+
+    list: (filter, limit, cb) => {
+      connect(CONN);
+      Score.find(filter, (err, scores) => {
+        if (!err) {
+          cb(scores.map((u) => {
+            return {
+              ...u._doc,
+              _id: undefined,
+              id: u._doc._id,
+              "__v": undefined,
+            }
+          }));
+        } else {
+          cb(err);
+        }
+      });
+    },
+
+    update: (id, score, cb) => {
+      connect(CONN);
+      const conditions = { _id: id };
+      const update = {...score};
+      const options = {
+        new: true,
+      };
+      Score.findOneAndUpdate(conditions, update, options, (err, doc) => {
+        cb(doc);
+      });
+    },
+
+    delete: (matching, cb) => {
+      connect(CONN);
+      Score.findOneAndRemove(matching, {}, (err, result) => {
+        if (err) {
+          cb(err);
+        } else {
+          cb(result);
+        }
+      });
+    },
   },
 };
