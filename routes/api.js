@@ -410,6 +410,39 @@ router.post('/users/register', (req, res, next) => {
 });
 
 /**
+ * List users
+ */
+router.get('/users', (req, res, next) => {
+  dbController.Users.list({}, null, (matches) => {
+    return res.status(200).json({
+      users: matches.map((m) => ({...m, password: undefined })),
+    });
+  });
+});
+
+/**
+ * Get User profile
+ */
+router.get('/users/:userId', (req, res, next) => {
+  dbController.Users.get(req.params.userId, (match) => {
+    return res.status(200).json({
+      user: match,
+    });
+  });
+});
+
+/**
+ * Get scores just for this user
+ */
+router.get('/users/:userId/scores', (req, res, next) => {
+  dbController.Scores.list({ user: req.params.userId }, null, (matches) => {
+    return res.status(200).json({
+      scores: matches,
+    });
+  });
+});
+
+/**
  * Update user (eg profile)
  */
 router.put('/users/:userId', (req, res, next) => {
@@ -422,42 +455,12 @@ router.put('/users/:userId', (req, res, next) => {
 });
 
 /**
- * List users
- */
-router.get('/users', (req, res, next) => {
-  dbController.Users.list({}, null, (matches) => {
-    return res.status(200).json({
-      users: matches.map((m) => ({...m, password: undefined })),
-    });
-  });
-});
-
-router.get('/users/:userId', (req, res, next) => {
-  dbController.Users.get(req.params.userId, (match) => {
-    return res.status(200).json({
-      user: match,
-    });
-  });
-});
-
-/**
  * List users of team
  */
 router.get('/users/teams/:teamName', (req, res, next) => {
   dbController.Users.list({ teamName: req.params.teamName }, null, (matches) => {
     return res.status(200).json({
       users: matches.map((m) => ({...m, password: undefined })) || [],
-    });
-  });
-});
-
-/**
- * Get scores just for this user
- */
-router.get('/users/:userId/scores', (req, res, next) => {
-  dbController.Scores.list({ user: req.params.userId }, null, (matches) => {
-    return res.status(200).json({
-      scores: matches,
     });
   });
 });
@@ -481,18 +484,36 @@ router.get('/leaderboards/all', (req, res, next) => {
   return res.status(200).json(payload);
 });
 
+/**
+ * Get list of divisions
+ */
 router.get('/divisions', (req, res, next) => {
   dbController.Divisions.list({}, null, ((divisions) => {
-    return res.status(200).json(divisions);
+    return res.status(200).json({ divisions });
   }));
 });
 
+/**
+ * Get details of a particular division
+ */
 router.get('/divisions/:divisionId', (req, res, next) => {
   dbController.Divisions.get(req.params.divisionId, ((division) => {
-    return res.status(200).json(division);
+    return res.status(200).json({ division });
   }));
 });
 
+/**
+ * Get events belonging to division
+ */
+router.get('/divisions/:divisionId/events', (req, res, next) => {
+  dbController.Events.list({ division: req.params.divisionId, }, null, ((events) => {
+    return res.status(200).json({ events });
+  }));
+});
+
+/**
+ * Create new division
+ */
 router.post('/divisions', (req, res, next) => {
   const { name } = req.body;
   dbController.Divisions.add({ name }, (created) => {
@@ -503,6 +524,9 @@ router.post('/divisions', (req, res, next) => {
   });
 });
 
+/**
+ * Get all events
+ */
 router.get('/events', (req, res, next) => {
   dbController.Events.list({}, null, (events) => {
     return res.status(200).json({
@@ -511,6 +535,9 @@ router.get('/events', (req, res, next) => {
   });
 });
 
+/**
+ * Create event
+ */
 router.post('/events', (req, res, next) => {
   const { name, division } = req.body;
 
@@ -532,6 +559,9 @@ router.post('/events', (req, res, next) => {
   });
 });
 
+/**
+ * Get all scores
+ */
 router.get('/scores', (req, res, next) => {
   dbController.Scores.list({}, null, (scores) => {
     return res.status(200).json({
@@ -540,14 +570,31 @@ router.get('/scores', (req, res, next) => {
   });
 });
 
+/**
+ * Get scores belonging to event
+ */
+
+router.get('/events/:eventId/scores', (req, res, next) => {
+  dbController.Scores.list({ event: req.params.eventId }, null, (results) => {
+    return res.status(200).json({
+      scores: results,
+    });
+  });
+});
+
+/**
+ * Put new score
+ */
 router.post('/scores', (req, res, next) => {
   const { user, event, score } = req.body;
 
-  dbController.Scores.add({
+  const scoreData = {
     user,
     event,
     score,
-  }, (created) => {
+  };
+
+  dbController.Scores.add(scoreData, (created) => {
     return res.status(201).json({
       success: 'true',
       score: created,
