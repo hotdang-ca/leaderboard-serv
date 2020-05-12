@@ -1,6 +1,6 @@
 {
   "name": "leaderboard-serv",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Leaderboard backend",
   "main": "index.js",
   "scripts": {
