@@ -545,16 +545,9 @@ router.post('/events', (req, res, next) => {
     name,
     division,
   }, (created) => {
-    // assign the division, so that when we fetch divisions, they can be hydrated.
-    dbController.Divisions
-      .update(division, { events: [ created.id] }, (newErr, _) => {
-        if (!newErr) {
-          return res.status(201).json({
-            success: 'true',
-            event: created,
-          });
-        }
-        return res.status(500).json({ err: newErr });
+    return res.status(201).json({
+      success: 'true',
+      event: created,
     });
   });
 });
