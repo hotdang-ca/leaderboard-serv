@@ -581,17 +581,28 @@ router.get('/events/:eventId/scores', (req, res, next) => {
 router.post('/scores', (req, res, next) => {
   const { user, event, score } = req.body;
 
-  const scoreData = {
-    user,
-    event,
-    score,
-  };
+  // we will not allow a duplicate score
+  dbController.Scores.list({ user, event }, null, (results) => {
+    console.log(results);
 
-  dbController.Scores.add(scoreData, (created) => {
-    return res.status(201).json({
-      success: 'true',
-      score: created,
+    if (results && results.length > 0) {
+      // TODO: maybe upsert it
+      return res.status(409).json({ error: 'You already have a score for this event.'})
+    }
+
+    const scoreData = {
+      user,
+      event,
+      score,
+    };
+  
+    dbController.Scores.add(scoreData, (created) => {
+      return res.status(201).json({
+        success: 'true',
+        score: created,
+      });
     });
+
   });
 });
 
