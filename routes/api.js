@@ -597,12 +597,14 @@ router.post('/scores', (req, res, next) => {
     };
   
     dbController.Scores.add(scoreData, (created) => {
-      return res.status(201).json({
-        success: 'true',
-        score: created,
+      dbController.Scores.updateRanking(user, event, (place) => {
+        return res.status(201).json({
+          success: 'true',
+          score: created,
+          place,
+        });
       });
     });
-
   });
 });
 

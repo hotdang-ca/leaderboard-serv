@@ -354,5 +354,42 @@ module.exports = {
         }
       });
     },
+
+    updateRanking: (user, event, cb) => {
+      Score.find({ event }, async (err, matches) => {
+        if (err) {
+          console.log('error:', err);
+          return;
+        }
+
+        const sortedScores = matches.sort((a, b) => {
+          return b.score - a.score
+        });
+
+        const sortedWithRank = [];
+        let yourRank = { place: 0 };
+
+        let place = 1;
+
+        for (const score of sortedScores) {
+          score.place = place;
+          await Promise.all([
+            Score.findByIdAndUpdate(score._id, { place }, {})
+          ]);
+          console.log(`Ranked score ${score.id} as ${place} `);
+          sortedWithRank.push(score);
+          if (score.user.toString() === user) {
+            yourRank = score;
+          }
+
+          place++;
+        }
+
+        // const yourRank = sortedWithRank.find((s) => s.user === user);
+        console.log('Your rank', yourRank);
+        
+        cb(`Your rank is ${yourRank && yourRank.place || 0}`);
+      });
+    },
   },
 };
