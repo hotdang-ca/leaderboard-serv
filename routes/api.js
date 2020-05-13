@@ -481,7 +481,78 @@ router.get('/users/gym/:gymName', (req, res, next) => {
  */
 router.get('/leaderboards/all', (req, res, next) => {
   const payload = _leaderboardData;
-  return res.status(200).json(payload);
+  const leaderboardData = {
+    divisions: [],
+  };
+
+  dbController.Divisions.list({}, null, (divisions) => {
+    // we now have all divisions; let's get all events
+    dbController.Events.list({}, null, (events) => {
+      // we now have all events; let's get scores for each event
+      dbController.Scores.list({}, null, (scores) => {
+        // we have all scores; let's get users
+        dbController.Users.list({}, null, (users) => {
+          // we have everything; let's build leaderboard data
+          console.log(`${divisions.length} divisions, ${events.length} events, ${scores.length} scores, ${users.length} users.`);
+
+          try {
+            divisions.forEach((division) => {
+              leaderboardData.divisions.push({
+                name: division.name,
+                events: [],
+              });
+
+              const divisionEvents = events.filter((e) => e.division.toString() === division.id.toString());
+              console.log(`Division ${division.id.toString()} has ${divisionEvents.length} events.`);
+
+              leaderboardData.divisions
+                .find((d) => d.name === division.name).events = divisionEvents.map((de) => ({
+                name: de.name,
+                scores: [],
+              }));
+
+              divisionEvents.forEach((event) => {
+                const eventScores = scores.filter((s) => s.event.toString() === event.id.toString());
+                console.log(`Event ${event.id.toString()} has ${eventScores.length} scores.`);
+  
+                eventScores.forEach((score) => {
+
+                  const user = users.find((u) => u.id.toString() === score.user.toString());
+                  console.log(`D: ${division.id.toString()}, E: ${event.id.toString()}, S: ${score.id.toString()}, U: ${user.id.toString()}`);
+
+                  const thisDivision = leaderboardData.divisions.find((d) => d.name === division.name);
+                  console.log('Division: ', thisDivision.name, thisDivision);
+
+                  const thisDivisionEvent = thisDivision.events.find((e) => e.name === event.name);
+                  console.log('Event: ', thisDivisionEvent);
+
+                  leaderboardData.divisions
+                    .find((d) => d.name === division.name)
+                    .events.find((e) => e.name === event.name)
+                    .scores.push({
+                      scoreId: score.id.toString(),
+                      place: score.place,
+                      firstName: user.firstName,
+                      lastInitial: user.lastName,
+                      gender: user.gender,
+                      teamName: user.teamName || '',
+                      gymName: user.gymName || '',
+                      score: score.score,
+                    });
+                }); // each score
+              }); // each event
+            }); // each division
+
+            return res.status(200).json({ status: 'ok', leaderboardData });
+
+          } catch (e) {
+            res.status(500).json({ error: 'Could not determine score data.' });
+          }
+          
+        }); // end of database cbs
+      });
+    });
+  });
 });
 
 /**
