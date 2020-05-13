@@ -532,6 +532,7 @@ router.get('/leaderboards/all', (req, res, next) => {
                     .scores.push({
                       scoreId: score.id.toString(),
                       place: score.place,
+                      userId: user.id.toString(),
                       firstName: user.firstName,
                       lastInitial: user.lastName,
                       gender: user.gender,
