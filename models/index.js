@@ -346,7 +346,7 @@ module.exports = {
 
     delete: (matching, cb) => {
       connect(CONN);
-      Score.findOneAndRemove(matching, {}, (err, result) => {
+      Score.findOneAndDelete(matching, {}, (err, result) => {
         if (err) {
           cb(err);
         } else {

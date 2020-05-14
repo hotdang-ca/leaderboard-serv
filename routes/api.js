@@ -638,7 +638,6 @@ router.get('/scores', (req, res, next) => {
 /**
  * Get scores belonging to event
  */
-
 router.get('/events/:eventId/scores', (req, res, next) => {
   dbController.Scores.list({ event: req.params.eventId }, null, (results) => {
     return res.status(200).json({
@@ -648,7 +647,7 @@ router.get('/events/:eventId/scores', (req, res, next) => {
 });
 
 /**
- * Put new score
+ * Add new score
  */
 router.post('/scores', (req, res, next) => {
   const { user, event, score } = req.body;
@@ -677,6 +676,17 @@ router.post('/scores', (req, res, next) => {
         });
       });
     });
+  });
+});
+
+/**
+ * Delete a score by ID
+ */
+router.delete('/scores/:scoreId', (req, res, next) => {
+  const { scoreId } = req.params;
+  dbController.Scores.delete({ _id: scoreId }, (result) => {
+    console.log('result', result);
+    return res.status(204).json();
   });
 });
 
