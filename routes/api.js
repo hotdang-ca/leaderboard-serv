@@ -345,10 +345,16 @@ router.post('/scores', (req, res, next) => {
  */
 router.delete('/scores/:scoreId', (req, res, next) => {
   const { scoreId } = req.params;
-  dbController.Scores.delete({ _id: scoreId }, (result) => {
-    console.log('result', result);
-    return res.status(204).json();
-  });
+  dbController.Scores.delete({ _id: scoreId }, (deleted) => {
+    console.log('deleted', deleted);
+
+    const { user, event } = deleted;
+    dbController.Scores.updateRanking(user, event, (_) => {
+    
+      return res.status(204).json();
+    
+    });
+  });    
 });
 
 module.exports = router;
