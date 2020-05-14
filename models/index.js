@@ -356,15 +356,18 @@ module.exports = {
     },
 
     updateRanking: (user, event, cb) => {
+      
+      // a - a => lowest to highest
+      // b - a => highest to lowest
+      const comparitor = (a, b) => b.score - a.score;
+      
       Score.find({ event }, async (err, matches) => {
         if (err) {
           console.log('error:', err);
           return;
         }
 
-        const sortedScores = matches.sort((a, b) => {
-          return b.score - a.score
-        });
+        const sortedScores = matches.sort(comparitor);
 
         const sortedWithRank = [];
         let yourRank = { place: 0 };
