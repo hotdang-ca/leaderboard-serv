@@ -52,6 +52,7 @@ const eventSchema = mongoose.Schema({
   name: String,
   division: { type: mongoose.Schema.Types.ObjectId, ref: 'Division' },
   scores: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Score' }],
+  rankType: String,
 });
 const Event = mongoose.model('Event', eventSchema);
 
