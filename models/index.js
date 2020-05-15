@@ -358,7 +358,14 @@ module.exports = {
       
       // a - a => lowest to highest
       // b - a => highest to lowest
-      const comparitor = (a, b) => b.score - a.score;
+      let comparitor = (a, b) => b.score - a.score;
+
+      const eventObject = Event.findOne({ _id: event });
+      console.log(event);
+
+      if (eventObject.rankType === 'a-to-b') {
+        comparitor = (a, b) => a.score - b.score;
+      }
       
       Score.find({ event }, async (err, matches) => {
         if (err) {

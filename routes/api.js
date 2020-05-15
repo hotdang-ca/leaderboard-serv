@@ -166,12 +166,11 @@ router.get('/leaderboards/all', (req, res, next) => {
               });
 
               const divisionEvents = events.filter((e) => e.division.toString() === division.id.toString());
-              console.log(`Division ${division.id.toString()} has ${divisionEvents.length} events.`);
-
               leaderboardData.divisions
                 .find((d) => d.name === division.name).events = divisionEvents.map((de) => ({
                 name: de.name,
                 scores: [],
+                rankType: de.rankType || 'b-to-a',
               }));
 
               divisionEvents.forEach((event) => {
@@ -200,6 +199,7 @@ router.get('/leaderboards/all', (req, res, next) => {
                       teamName: user.teamName || '',
                       gymName: user.gymName || '',
                       score: score.score,
+                      rankType: event.rankType,
                     });
                 }); // each score
               }); // each event
@@ -290,10 +290,8 @@ router.post('/events', (req, res, next) => {
  */
 router.put('/events/:eventId', (req, res, next) => {
   const { eventId } = req.params;
-  console.log('update with: ', req.body);
-  
+
   dbController.Events.update(eventId, req.body, (updated) => {
-    console.log('updated', updated);
     return res.status(201).json({ event: updated });
   });
 });
