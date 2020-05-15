@@ -52,6 +52,7 @@ const eventSchema = mongoose.Schema({
   name: String,
   division: { type: mongoose.Schema.Types.ObjectId, ref: 'Division' },
   scores: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Score' }],
+  rankType: String,
 });
 const Event = mongoose.model('Event', eventSchema);
 
@@ -264,10 +265,8 @@ module.exports = {
       connect(CONN);
       const conditions = { _id: id };
       const update = {...event};
-      const options = {
-        new: true,
-      };
-      Event.findOneAndUpdate(conditions, update, options, (err, doc) => {
+
+      Event.findOneAndUpdate(conditions, update, {}, (err, doc) => {
         cb(doc);
       });
     },
@@ -359,7 +358,14 @@ module.exports = {
       
       // a - a => lowest to highest
       // b - a => highest to lowest
-      const comparitor = (a, b) => b.score - a.score;
+      let comparitor = (a, b) => b.score - a.score;
+
+      const eventObject = Event.findOne({ _id: event });
+      console.log(event);
+
+      if (eventObject.rankType === 'a-to-b') {
+        comparitor = (a, b) => a.score - b.score;
+      }
       
       Score.find({ event }, async (err, matches) => {
         if (err) {
