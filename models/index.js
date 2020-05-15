@@ -264,10 +264,8 @@ module.exports = {
       connect(CONN);
       const conditions = { _id: id };
       const update = {...event};
-      const options = {
-        new: true,
-      };
-      Event.findOneAndUpdate(conditions, update, options, (err, doc) => {
+
+      Event.findOneAndUpdate(conditions, update, {}, (err, doc) => {
         cb(doc);
       });
     },

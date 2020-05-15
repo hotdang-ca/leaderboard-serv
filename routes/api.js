@@ -286,6 +286,19 @@ router.post('/events', (req, res, next) => {
 });
 
 /**
+ * Update event
+ */
+router.put('/events/:eventId', (req, res, next) => {
+  const { eventId } = req.params;
+  console.log('update with: ', req.body);
+  
+  dbController.Events.update(eventId, req.body, (updated) => {
+    console.log('updated', updated);
+    return res.status(201).json({ event: updated });
+  });
+});
+
+/**
  * Get all scores
  */
 router.get('/scores', (req, res, next) => {
