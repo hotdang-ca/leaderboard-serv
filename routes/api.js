@@ -18,7 +18,6 @@ router.post('/users/login', (req, res, next) => {
   const { email, password } = req.body;
   
   dbController.Users.list({ email }, 1, (matches) => {
-    console.log('matches', matches);
 
     if (!matches || matches.length === 0) {
       return res.status(401).json({ error: 'No such user.'});
@@ -48,7 +47,6 @@ router.post('/users/register', (req, res, next) => {
   
   // do we have this user?
   dbController.Users.list({ email }, null, (duplicates) => {
-    console.log('duplicates', duplicates);
     if (duplicates.length) {
       return res.status(400).json({ error: 'Duplicate user. Use a different email address.'});
     }
@@ -156,7 +154,7 @@ router.get('/leaderboards/all', (req, res, next) => {
         // we have all scores; let's get users
         dbController.Users.list({}, null, (users) => {
           // we have everything; let's build leaderboard data
-          console.log(`${divisions.length} divisions, ${events.length} events, ${scores.length} scores, ${users.length} users.`);
+          // console.log(`${divisions.length} divisions, ${events.length} events, ${scores.length} scores, ${users.length} users.`);
 
           try {
             divisions.forEach((division) => {
@@ -178,13 +176,13 @@ router.get('/leaderboards/all', (req, res, next) => {
                 eventScores.forEach((score) => {
 
                   const user = users.find((u) => u.id.toString() === score.user.toString());
-                  console.log(`D: ${division.id.toString()}, E: ${event.id.toString()}, S: ${score.id.toString()}, U: ${user.id.toString()}`);
+                  // console.log(`D: ${division.id.toString()}, E: ${event.id.toString()}, S: ${score.id.toString()}, U: ${user.id.toString()}`);
 
                   const thisDivision = leaderboardData.divisions.find((d) => d.name === division.name);
-                  console.log('Division: ', thisDivision.name, thisDivision);
+                  // console.log('Division: ', thisDivision.name, thisDivision);
 
                   const thisDivisionEvent = thisDivision.events.find((e) => e.name === event.name);
-                  console.log('Event: ', thisDivisionEvent);
+                  // console.log('Event: ', thisDivisionEvent);
 
                   leaderboardData.divisions
                     .find((d) => d.name === division.name)
@@ -326,8 +324,6 @@ router.post('/scores', (req, res, next) => {
 
   // we will not allow a duplicate score
   dbController.Scores.list({ user, event }, null, (results) => {
-    console.log(results);
-
     if (results && results.length > 0) {
       // TODO: maybe upsert it
       return res.status(409).json({ error: 'You already have a score for this event.'})
