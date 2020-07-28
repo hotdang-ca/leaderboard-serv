@@ -224,6 +224,18 @@ router.get('/divisions', (req, res, next) => {
   }));
 });
 
+router.post('/divisions', (req, res, next) => {
+  dbController.Divisions.add(req.body, ((division) => {
+    return res.status(200).json({ division });
+  }));
+});
+
+router.delete('/divisions/:divisionId', (req, res, next) => {
+  dbController.Divisions.delete({ _id: req.params.divisionId }, ((division) => {
+    return res.status(204).send('ok');
+  }));
+});
+
 /**
  * Get details of a particular division
  */
@@ -270,11 +282,13 @@ router.get('/events', (req, res, next) => {
  * Create event
  */
 router.post('/events', (req, res, next) => {
-  const { name, division } = req.body;
+  const { name, division, rankType } = req.body;
+  console.log('new event', req.body);
 
   dbController.Events.add({
     name,
     division,
+    rankType,
   }, (created) => {
     return res.status(201).json({
       success: 'true',
@@ -291,6 +305,14 @@ router.put('/events/:eventId', (req, res, next) => {
 
   dbController.Events.update(eventId, req.body, (updated) => {
     return res.status(201).json({ event: updated });
+  });
+});
+
+router.delete('/events/:eventId', (req, res, next) => {
+  const { eventId } = req.params;
+
+  dbController.Events.delete(eventId, (updated) => {
+    return res.status(204).send('ok');
   });
 });
 
