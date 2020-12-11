@@ -15,7 +15,7 @@ if (!DB_USER || !DB_PASS || !DB_SERVER || !DB_PORT || !DB_ENDPOINT) {
   return 1;
 }
 
-const CONN = `mongodb://${DB_USER}:${DB_PASS}@${DB_SERVER}:${DB_PORT}/${DB_ENDPOINT}`;
+const CONN = `mongodb+srv://${DB_USER}:${DB_PASS}@${DB_SERVER}/${DB_ENDPOINT}?retryWrites=true&w=majority`;
 mongoose.Promise = global.Promise;
 
 console.log('CONN', CONN);
