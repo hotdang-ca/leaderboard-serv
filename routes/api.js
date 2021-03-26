@@ -230,11 +230,22 @@ router.post('/divisions', (req, res, next) => {
   }));
 });
 
+/**
+ * Delete a division
+ */
 router.delete('/divisions/:divisionId', (req, res, next) => {
     const { divisionId } = req.params;
-  dbController.Divisions.delete({ _id: divisionId }, ((division) => {
-    return res.status(204).send('ok');
-  }));
+
+  // first check for belonging events
+  dbController.Events.list({ division: divisionId }, null, (events) => {
+    if (events && events.length) {
+        return res.status(409).json({ status: 409, message: 'You cannot delete this Division; there are still events in this division. Delete the events first, then come delete the division.'});
+    }
+
+    dbController.Divisions.delete({ _id: divisionId }, ((division) => {
+        return res.status(204).json({ status: 204, message: 'ok'});
+    }));
+  });
 });
 
 /**
@@ -312,8 +323,15 @@ router.put('/events/:eventId', (req, res, next) => {
 router.delete('/events/:eventId', (req, res, next) => {
   const { eventId } = req.params;
 
-  dbController.Events.delete({ _id: eventId}, (updated) => {
-    return res.status(204).send('ok');
+  // first, see if there are scores for this event
+  dbController.Scores.list({ event: eventId }, null, (scores) => {
+      if (scores && scores.length) {
+          return res.status(409).json({ status: 409, message: 'There are still scores that belong to this event. First delete the scores. Then come back to delete the event.'});
+      }
+
+      dbController.Events.delete({ _id: eventId}, (updated) => {
+        return res.status(204).json({ status: 204, message: 'ok'});
+      });
   });
 });
 
