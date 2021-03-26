@@ -231,7 +231,8 @@ router.post('/divisions', (req, res, next) => {
 });
 
 router.delete('/divisions/:divisionId', (req, res, next) => {
-  dbController.Divisions.delete({ _id: req.params.divisionId }, ((division) => {
+    const { divisionId } = req.params;
+  dbController.Divisions.delete({ _id: divisionId }, ((division) => {
     return res.status(204).send('ok');
   }));
 });
@@ -311,7 +312,7 @@ router.put('/events/:eventId', (req, res, next) => {
 router.delete('/events/:eventId', (req, res, next) => {
   const { eventId } = req.params;
 
-  dbController.Events.delete(eventId, (updated) => {
+  dbController.Events.delete({ _id: eventId}, (updated) => {
     return res.status(204).send('ok');
   });
 });
