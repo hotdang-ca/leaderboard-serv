@@ -17,12 +17,13 @@ if (!DB_USER || !DB_PASS || !DB_SERVER || !DB_PORT || !DB_ENDPOINT) {
 
 const CONN = `mongodb+srv://${DB_USER}:${DB_PASS}@${DB_SERVER}/${DB_ENDPOINT}?retryWrites=true&w=majority`;
 mongoose.Promise = global.Promise;
+mongoose.set('useFindAndModify', false);
 
 console.log('CONN', CONN);
 
 const connect = (connectionString) => {
   if (typeof mongoose !== 'undefined') {
-    mongoose.connect(connectionString);
+    mongoose.connect(connectionString, { useFindAndModify: false });
   }
 };
 
